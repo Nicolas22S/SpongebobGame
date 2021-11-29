@@ -12,6 +12,7 @@ kaboom({
 loadSprite("spongebob", "sprites/spongebob.png");
 loadSprite("spongepls", "sprites/spongepls.png");
 loadSprite("goku", "sprites/goku.png");
+loadSprite("bullet", "sprites/bullet.png");
 loadSprite("credit", "sprites/credit.jpg");
 loadSprite("ZAMN", "sprites/ZAMN.jpg");
 loadSprite("krabby-patty", "sprites/krabby-patty.png");
@@ -42,8 +43,6 @@ const mapWidth = 32;
 var mapping = [];
 var intensity = 2.5;
 
-
-
 //layers (spongebob in front)
 layers([
     "patty",
@@ -51,7 +50,7 @@ layers([
     "spongebob",
 ], "game");
 
-//
+//Set difficulty
 scene("startUp", () => {
   //fullscreen
   screen();
@@ -75,7 +74,7 @@ scene("startUp", () => {
       intesity = diff.text;
       play("tick");
       switch (diff.text){
-      case 2.4:
+      case 2.1:
         updatePic("easy",0.4,220); break; 
       case 4.9:
         updatePic("medium",0.4,220); break;
@@ -83,9 +82,11 @@ scene("startUp", () => {
         updatePic("ZAMN",0.4,160); play("DamnDaniel"); break;
       case 1.1:
         updatePic("easy",0.4,240); break;
-      case 2.5:
+      case 2.2:
         updatePic("spongebob",0.6,220); break;
-      }    
+      case 3.7:
+        updatePic("spongebob",0.6,220); break;
+      }
     }
   });
   keyPress('right', () => {
@@ -95,7 +96,7 @@ scene("startUp", () => {
     intesity = diff.text;
     play("tick");
     switch (diff.text){
-      case 2.6:
+      case 3.8:
         updatePic("medium",0.4,220); break;
       case 5:
         updatePic("hard",0.25,220); play("boom"); break;
@@ -105,14 +106,14 @@ scene("startUp", () => {
         updatePic("ZAMN",0.4,160); play("DamnDaniel"); break;
       case 1.3:
         updatePic("easy",0.4,220); break;
-      case 2.5:
+      case 2.2:
         updatePic("spongebob",0.6,220); break;
       }
     }
   });
 keyPress('enter', () => {
     go("game");
-    console.log(intensity)
+    console.log(intensity);
     });
 });
 
@@ -164,6 +165,7 @@ var player = add([
 //Ultra Instinct
 const music = play("UltraInstinct", {loop: true});
 
+
 //Add goku
 var goku = add([
         sprite("goku"),
@@ -174,12 +176,9 @@ var goku = add([
         'goku',
     ]);
 
+
 //Movement
 const dirs = {
-  "left": LEFT,
-  "right": RIGHT,
-  "up": UP,
-  "down": DOWN,
   "a": LEFT,
   "d": RIGHT,
   "w": UP,
@@ -187,7 +186,7 @@ const dirs = {
 };
 for (const dir in dirs) {
   keyDown(dir, () => {
-    player.move(dirs[dir].scale(SPEED/(0.42*intensity)));
+    player.move(dirs[dir].scale(SPEED/(0.39*intensity)));
   });
 }
 
@@ -202,6 +201,18 @@ action('goku', (goku) => {
   if (m > mList[0] && m <= mList[1]){
     goku.move(0,-SPEED);
     m++;
+  }
+  if (m%200 == 0){
+    add([
+		pos(goku.pos),
+		move(player.pos.sub(goku.pos).unit(), SPEED*2),
+		sprite("bullet"),
+		area(),
+    cleanup(),
+    scale(0.4),
+		origin("center"),
+		"bullet",
+	  ]);
   }
   if (m > mList[1] && m <= mList[2]){
     goku.move(SPEED,0);
@@ -220,22 +231,23 @@ action('goku', (goku) => {
 //Eat 
 player.collides('patty', (p) => {
   destroy(p);
-  play("munch")
+  play("munch");
   pattyCount--;
   if (pattyCount == 0){
     destroy(goku);
+    destroyAll("bullet");
     music.pause();
     add([
       text("SO MUCH WIN!!!"),
       pos(0,150),
       layer("spongebob"),
-    ])
+    ]);
     destroyAll('patty');
     play("music",{loop: true,});
     SPEED = 600;
     superIdol = true;
   }
-})
+});
 
 //Die when touch goku
 player.collides('goku', () => {
@@ -244,15 +256,22 @@ player.collides('goku', () => {
   music.pause();
   sleep(2100);
   document.location.href=window.atob('aHR0cHM6Ly9uaWdnYWZhcnQuY29tLw==');
-})
+});
+player.collides('bullet', () => {
+  destroy(player);
+  play("scream");
+  music.pause();
+  sleep(2100);
+  document.location.href=window.atob('aHR0cHM6Ly9uaWdnYWZhcnQuY29tLw==');
+});
 
 
 //Input super idol cheat code
 charInput((ch) => {
-  
+
   if(!superIdol){
       txtInput += ch;
-    
+
       for(let i = 0; i < txtInput.length; i++){
         if (txtInput != activation.substring(0,txtInput.length)){
           txtInput = "";
@@ -261,13 +280,14 @@ charInput((ch) => {
       if (txtInput == activation){
         keyPress('enter', () => {
           music.pause();
+          destroyAll("bullet");
           console.log(txtInput);
           superIdol = true;   
-          destroy(player);
           play("super-idol",{loop: true,});
+          idol();
+          destroy(player);
           destroy(goku);
-          destroyAll('patty');
-          idol(); 
+          destroyAll('patty'); 
           add([
           text("SUPER IDOL\n\t\tACTIVATED"),
           pos(0,150),
@@ -281,6 +301,7 @@ charInput((ch) => {
           'spongebob',
           ]);
           SPEED = 600;  
+          
       });
       }
       
@@ -345,3 +366,4 @@ function updatePic(d,s,p){
     'pic',
   ])
 }
+
