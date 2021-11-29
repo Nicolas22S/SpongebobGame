@@ -1,7 +1,5 @@
 body {
   color: blue; 
 font-weight: bold; 
-background-image: url("https://ichef.bbci.co.uk/news/976/cpsprodpb/123DA/production/_107741747_matts.jpg"); 
-background: rgb(58,176,210);
 background: radial-gradient(circle, rgba(58,176,210,1) 0%, rgba(0,255,209,1) 100%, rgba(0,255,209,1) 100%);
 }
